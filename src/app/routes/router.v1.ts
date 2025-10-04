@@ -5,6 +5,7 @@ import { OTPRouter } from '../modules/otp/otp.route';
 import { IModuleRoutes } from '../types';
 import { BlogRouter } from '../modules/blog/blog.routes';
 import { ContactRouter } from '../modules/contact/contact.route';
+import { ExperienceRouter } from '../modules/experience/experience.routes';
 
 const router = Router();
 
@@ -22,12 +23,17 @@ const moduleRoutes: IModuleRoutes[] = [
     element: OTPRouter,
   },
   {
+    path: '/contact',
+    element: ContactRouter,
+  },
+  {
     path: '/blogs',
     element: BlogRouter,
   },
+
   {
-    path: '/contact',
-    element: ContactRouter,
+    path: '/experience',
+    element: ExperienceRouter,
   },
 ];
 
