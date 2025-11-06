@@ -8,7 +8,7 @@ export interface AuthTokens {
 export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
   const isProduction = process.env.NODE_ENV === 'production';
   const sameSite = isProduction ? 'none' : 'lax'; // allow cross-subdomain in prod
-  const domain = isProduction ? '.shrlbd.com' : undefined;
+  const domain = isProduction ? '.aminuldev.site' : undefined;
 
   if (tokenInfo.accessToken) {
     res.cookie('accessToken', tokenInfo.accessToken, {

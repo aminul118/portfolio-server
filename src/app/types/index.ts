@@ -5,3 +5,5 @@ export interface IModuleRoutes {
   path: string;
   element: Router;
 }
+
+export type { EnvConfig } from './env.types';
