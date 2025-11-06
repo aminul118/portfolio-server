@@ -1,20 +1,11 @@
+/* eslint-disable no-console */
 /* eslint-disable @typescript-eslint/no-explicit-any */
 import ejs from 'ejs';
-import nodemailer from 'nodemailer';
 import path from 'path';
 import AppError from '../errorHelpers/AppError';
 import envVars from '../config/env';
 import { SendEmailOptions } from '../types';
-
-const transporter = nodemailer.createTransport({
-  host: envVars.EMAIL_SENDER.SMTP_HOST,
-  port: envVars.EMAIL_SENDER.SMTP_PORT,
-  secure: envVars.EMAIL_SENDER.SMTP_PORT === 465, // 465 = SSL; 587 = STARTTLS
-  auth: {
-    user: envVars.EMAIL_SENDER.SMTP_USER,
-    pass: envVars.EMAIL_SENDER.SMTP_PASS,
-  },
-});
+import nodeMailerTransporter from '../config/nodemailer.config';
 
 const sendEmail = async ({
   to,
@@ -24,11 +15,17 @@ const sendEmail = async ({
   templateName,
   templateData,
   attachments,
-}: SendEmailOptions) => {
+}: SendEmailOptions): Promise<void> => {
   try {
-    const templatePath = path.join(__dirname, `templates/${templateName}.ejs`);
+    const templatePath = path.join(
+      process.cwd(),
+      'src',
+      'app',
+      'templates',
+      `${templateName}.ejs`,
+    );
     const html = await ejs.renderFile(templatePath, templateData);
-    const info = await transporter.sendMail({
+    const info = await nodeMailerTransporter.sendMail({
       from: envVars.EMAIL_SENDER.SMTP_FORM,
       to,
       cc,
@@ -41,9 +38,14 @@ const sendEmail = async ({
         contentType: a.contentType,
       })),
     });
-    console.log(`\u2709\uFE0F Email sent to ${to}: ${info.messageId}`);
+
+    if (envVars.NODE_ENV === 'development') {
+      console.log(` Email sent to ${to}: ${info.messageId}`);
+    }
   } catch (error: any) {
-    console.log('ERROR-->', error.message);
+    if (envVars.NODE_ENV === 'development') {
+      console.log('ERROR-->', error.message);
+    }
     throw new AppError(401, 'Email error');
   }
 };
