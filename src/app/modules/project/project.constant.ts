@@ -1,1 +1,1 @@
-export const projectSearchableField = ['_id', 'title', 'content'];
+export const projectSearchableField = ['_id', 'title', 'content', 'isFeatured'];

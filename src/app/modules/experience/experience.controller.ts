@@ -18,20 +18,24 @@ const createExperience = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getAllExperience = catchAsync(async (req: Request, res: Response) => {
-  const data = await ExperienceService.getAllExperience();
+  const query = req.query as Record<string, string>;
+  const { data, meta } = await ExperienceService.getAllExperience(
+    query as Record<string, string>,
+  );
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
     message: 'Experience retrieved successfully',
     data,
+    meta,
   });
 });
 
 const deleteSingleExperience = catchAsync(
   async (req: Request, res: Response) => {
     const { id } = req.params;
-    console.log(id);
+
     const data = await ExperienceService.deleteSingleExperience(id);
 
     sendResponse(res, {
