@@ -18,7 +18,7 @@ const checkAuth =
       }
       const verifiedToken = verifyToken(
         accessToken,
-        envVars.JWT_ACCESS_SECRET,
+        envVars.JWT.JWT_ACCESS_SECRET,
       ) as JwtPayload;
 
       if (!verifiedToken) {
