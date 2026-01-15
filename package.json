@@ -37,6 +37,7 @@
     "@types/passport-google-oauth20": "^2.0.16",
     "@types/passport-local": "^1.0.38",
     "@types/pdfkit": "^0.17.2",
+    "@types/streamifier": "^0.1.2",
     "cross-env": "^10.0.0",
     "eslint": "^9.33.0",
     "husky": "^9.1.7",
@@ -68,8 +69,9 @@
     "passport": "^0.7.0",
     "passport-google-oauth20": "^2.0.0",
     "passport-local": "^1.0.0",
-    "pdfkit": "^0.17.1",
+    "pdfkit": "^0.17.2",
     "redis": "^5.8.0",
+    "streamifier": "^0.1.1",
     "transliteration": "^2.3.5",
     "zod": "^3.23.8"
   }

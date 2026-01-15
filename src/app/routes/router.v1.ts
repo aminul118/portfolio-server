@@ -8,6 +8,7 @@ import { ContactRouter } from '../modules/contact/contact.route';
 import { ExperienceRouter } from '../modules/experience/experience.routes';
 import { ProjectRouter } from '../modules/project/project.routes';
 import { LinkRouter } from '../modules/links/links.routes';
+import { InvoiceRouter } from '../modules/invoice/invoice.routers';
 
 const router = Router();
 
@@ -45,6 +46,10 @@ const moduleRoutes: IModuleRoutes[] = [
   {
     path: '/links',
     element: LinkRouter,
+  },
+  {
+    path: '/invoice',
+    element: InvoiceRouter,
   },
 ];
 

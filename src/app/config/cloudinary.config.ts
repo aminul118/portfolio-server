@@ -7,26 +7,22 @@ cloudinary.config({
   cloud_name: envVars.CLOUDINARY.CLOUDINARY_NAME,
   api_key: envVars.CLOUDINARY.CLOUDINARY_API_KEY,
   api_secret: envVars.CLOUDINARY.CLOUDINARY_API_SECRET,
-  //   secure_distribution: "mydomain.com",
-  //   upload_prefix: "https://api-eu.cloudinary.com",
 });
+
+export const cloudinaryUploads = cloudinary;
 
 export const deleteImageFromCLoudinary = async (url: string) => {
   try {
-    const regex = /\/v\d+\/(.*?)\.(jpg|jpeg|png|gif|webp)$/i;
-
+    const regex = /\/v\d+\/(.*?)\.(pdf|jpg|jpeg|png)$/i;
     const match = url.match(regex);
 
-    // console.log({ match });
-
-    if (match && match[1]) {
-      const public_id = match[1];
-      await cloudinary.uploader.destroy(public_id);
-      // console.log(`File ${public_id} is deleted from cloudinary`);
+    if (match?.[1]) {
+      await cloudinary.uploader.destroy(match[1], {
+        resource_type: 'image',
+        type: 'upload',
+      });
     }
   } catch (error: any) {
-    throw new AppError(401, 'Cloudinary image deletion failed', error.message);
+    throw new AppError(401, 'Cloudinary deletion failed', error.message);
   }
 };
-
-export const cloudinaryUploads = cloudinary;
