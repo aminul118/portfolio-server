@@ -7,27 +7,29 @@ export interface AuthTokens {
 }
 
 export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
-  const isProduction = envVars.NODE_ENV === 'production';
-
-  const cookieConfigBase = {
-    httpOnly: true,
-    secure: isProduction, // MUST be true when sameSite='none'
-    sameSite: isProduction ? 'none' : 'lax',
-    domain: isProduction ? '.aminuldev.site' : undefined,
-    path: '/',
-  } as const;
+  const isProduction = process.env.NODE_ENV === 'production';
+  const sameSite = isProduction ? 'none' : 'lax'; // allow cross-subdomain in prod
+  const domain = isProduction ? '.aminuldev.site' : undefined;
 
   if (tokenInfo.accessToken) {
     res.cookie('accessToken', tokenInfo.accessToken, {
-      ...cookieConfigBase,
-      maxAge: 1000 * 60 * 60 * 24, // 1 day
+      httpOnly: true,
+      secure: isProduction,
+      sameSite,
+      domain,
+      path: '/',
+      maxAge: Number(envVars.JWT.JWT_ACCESS_EXPIRES),
     });
   }
 
   if (tokenInfo.refreshToken) {
     res.cookie('refreshToken', tokenInfo.refreshToken, {
-      ...cookieConfigBase,
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
+      httpOnly: true,
+      secure: isProduction,
+      sameSite,
+      domain,
+      path: '/',
+      maxAge: Number(envVars.JWT.JWT_REFRESH_EXPIRES),
     });
   }
 };

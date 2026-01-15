@@ -11,7 +11,7 @@ const createProject = async (payload: IProject) => {
 const getAllProjects = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(Project.find(), query);
 
-  const events = await queryBuilder
+  const projects = await queryBuilder
     .search(projectSearchableField)
     .filter()
     .fields()
@@ -19,7 +19,7 @@ const getAllProjects = async (query: Record<string, string>) => {
     .sort();
 
   const [data, meta] = await Promise.all([
-    events.build(),
+    projects.build(),
     queryBuilder.getMeta(),
   ]);
 

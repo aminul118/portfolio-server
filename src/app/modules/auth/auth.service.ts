@@ -2,13 +2,13 @@
 import AppError from '../../errorHelpers/AppError';
 import { User } from '../user/user.model';
 import httpStatus from 'http-status-codes';
-import bcryptjs from 'bcryptjs';
 import { createNewAccessTokenWithRefreshToken } from '../../utils/userTokens';
 import { JwtPayload } from 'jsonwebtoken';
 import envVars from '../../config/env';
 import { IAuthProvider, IsActive } from '../user/user.interface';
 import jwt from 'jsonwebtoken';
 import sendEmail from '../../utils/sendEmail';
+import { comparePassword, passwordEncrypt } from '../../utils/password';
 
 const getNewAccessToken = async (refreshToken: string) => {
   return await createNewAccessTokenWithRefreshToken(refreshToken);
@@ -25,7 +25,7 @@ const changePassword = async (
     throw new AppError(httpStatus.NOT_FOUND, 'User not found');
   }
 
-  const isOldPassword = await bcryptjs.compare(
+  const isOldPassword = await comparePassword(
     oldPassword,
     user.password as string,
   );
@@ -34,7 +34,7 @@ const changePassword = async (
     throw new AppError(httpStatus.UNAUTHORIZED, "Old password doesn't match");
   }
 
-  user.password = await bcryptjs.hash(newPassword, envVars.BCRYPT_SALT_ROUND);
+  user.password = await passwordEncrypt(newPassword);
   await user.save();
 };
 
@@ -54,10 +54,7 @@ const setPassword = async (userId: string, plainPassword: string) => {
     );
   }
 
-  const hashedPassword = await bcryptjs.hash(
-    plainPassword,
-    envVars.BCRYPT_SALT_ROUND,
-  );
+  const hashedPassword = await passwordEncrypt(plainPassword);
 
   const credentialProvider: IAuthProvider = {
     provider: 'credentials',
@@ -98,14 +95,14 @@ const forgotPassword = async (email: string) => {
     role: isUserExist.role,
   };
 
-  const resetToken = jwt.sign(jwtPayload, envVars.JWT_ACCESS_SECRET, {
+  const resetToken = jwt.sign(jwtPayload, envVars.JWT.JWT_ACCESS_SECRET, {
     expiresIn: '10m',
   });
 
   const resetUILink = `${envVars.FRONTEND_URL}/reset-password?id=${isUserExist._id}&token=${resetToken}`;
   const fullName = `${isUserExist.firstName} ${isUserExist.lastName}`;
 
-  sendEmail({
+  await sendEmail({
     to: isUserExist.email,
     subject: 'Password Reset',
     templateName: 'forgetPassword',
@@ -129,10 +126,7 @@ const resetPassword = async (
     throw new AppError(httpStatus.FORBIDDEN, 'User does not exist');
   }
 
-  const hashedPassword = await bcryptjs.hash(
-    payload.newPassword,
-    Number(envVars.BCRYPT_SALT_ROUND),
-  );
+  const hashedPassword = await passwordEncrypt(payload.newPassword);
 
   isUserExist.password = hashedPassword;
 

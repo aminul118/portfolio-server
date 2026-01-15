@@ -7,6 +7,7 @@ import { BlogRouter } from '../modules/blog/blog.routes';
 import { ContactRouter } from '../modules/contact/contact.route';
 import { ExperienceRouter } from '../modules/experience/experience.routes';
 import { ProjectRouter } from '../modules/project/project.routes';
+import { LinkRouter } from '../modules/links/links.routes';
 
 const router = Router();
 
@@ -39,6 +40,11 @@ const moduleRoutes: IModuleRoutes[] = [
   {
     path: '/experience',
     element: ExperienceRouter,
+  },
+
+  {
+    path: '/links',
+    element: LinkRouter,
   },
 ];
 

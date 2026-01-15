@@ -69,7 +69,7 @@ const getNewAccessToken = catchAsync(async (req: Request, res: Response) => {
 const logout = catchAsync(async (req: Request, res: Response) => {
   const isProduction = process.env.NODE_ENV === 'production';
   const sameSite = isProduction ? 'none' : 'lax';
-  const domain = isProduction ? '.shrlbd.com' : undefined;
+  const domain = isProduction ? '.aminuldev.site' : undefined;
 
   res.clearCookie('accessToken', {
     httpOnly: true,
@@ -97,7 +97,7 @@ const logout = catchAsync(async (req: Request, res: Response) => {
 
 const changePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const { newPassword, oldPassword } = req.body.newPassword;
+    const { newPassword, oldPassword } = req.body;
     const decodedToken = req.user;
 
     await AuthServices.changePassword(

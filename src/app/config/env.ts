@@ -22,10 +22,7 @@ const loadEnvVariables = (): EnvConfig => ({
   PORT: getEnv('PORT'),
   DB_URL: getEnv('DB_URL'),
   NODE_ENV: getEnv('NODE_ENV') as 'development' | 'production',
-  JWT_ACCESS_SECRET: getEnv('JWT_ACCESS_SECRET'),
-  JWT_ACCESS_EXPIRES: getEnv('JWT_ACCESS_EXPIRES'),
-  JWT_REFRESH_SECRET: getEnv('JWT_REFRESH_SECRET'),
-  JWT_REFRESH_EXPIRES: getEnv('JWT_REFRESH_EXPIRES'),
+
   BCRYPT_SALT_ROUND: Number(getEnv('BCRYPT_SALT_ROUND')),
   SUPER_ADMIN_EMAIL: getEnv('SUPER_ADMIN_EMAIL'),
   SUPER_ADMIN_PASSWORD: getEnv('SUPER_ADMIN_PASSWORD'),
@@ -53,6 +50,12 @@ const loadEnvVariables = (): EnvConfig => ({
     REDIS_PORT: Number(getEnv('REDIS_PORT')),
     REDIS_USERNAME: getEnv('REDIS_USERNAME'),
     REDIS_PASSWORD: getEnv('REDIS_PASSWORD'),
+  },
+  JWT: {
+    JWT_ACCESS_SECRET: getEnv('JWT_ACCESS_SECRET'),
+    JWT_ACCESS_EXPIRES: getEnv('JWT_ACCESS_EXPIRES'),
+    JWT_REFRESH_SECRET: getEnv('JWT_REFRESH_SECRET'),
+    JWT_REFRESH_EXPIRES: getEnv('JWT_REFRESH_EXPIRES'),
   },
 });
 
