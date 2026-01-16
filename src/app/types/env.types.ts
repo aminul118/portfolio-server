@@ -16,19 +16,7 @@ export interface EnvConfig {
   FRONTEND_URL: string;
   ADMIN_NAME: string;
   ADMIN_EMAIL: string;
-  OPENAI_API_KEY: string;
-  SSL: {
-    SSL_STORE_ID: string;
-    SSL_STORE_PASS: string;
-    SSL_PAYMENT_API: string;
-    SSL_VALIDATION_API: string;
-    SSL_SUCCESS_BACKEND_URL: string;
-    SSL_FAIL_BACKEND_URL: string;
-    SSL_CANCEL_BACKEND_URL: string;
-    SSL_SUCCESS_FRONTEND_URL: string;
-    SSL_FAIL_FRONTEND_URL: string;
-    SSL_CANCEL_FRONTEND_URL: string;
-  };
+
   CLOUDINARY: {
     CLOUDINARY_NAME: string;
     CLOUDINARY_API_KEY: string;
