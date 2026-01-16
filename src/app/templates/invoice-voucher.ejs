@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <style>
+      body {
+        background-color: #f4f6f8;
+        font-family: Arial, sans-serif;
+        padding: 24px;
+      }
+      .card {
+        max-width: 600px;
+        margin: auto;
+        background: #ffffff;
+        border-radius: 12px;
+        padding: 24px;
+      }
+      .muted {
+        color: #6b7280;
+        font-size: 14px;
+      }
+      .row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+      }
+      .total {
+        background: #0b3a67;
+        color: #fff;
+        padding: 16px;
+        border-radius: 8px;
+      }
+      .btn {
+        display: inline-block;
+        margin-top: 20px;
+        background: #0b3a67;
+        color: #fff;
+        text-decoration: none;
+        padding: 12px 20px;
+        border-radius: 6px;
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="card">
+      <h2>Invoice Ready</h2>
+
+      <p class="muted">
+        Invoice #<%= invoiceNo %> • <%= new
+        Date(invoiceDate).toLocaleDateString('en-GB') %>
+      </p>
+
+      <hr />
+
+      <p class="muted">Payable To</p>
+      <p>
+        <strong><%= payableTo.name %></strong><br />
+        <%= payableTo.address || '' %><br />
+        <%= payableTo.phone || '' %>
+      </p>
+
+      <hr />
+
+      <div class="row">
+        <span>Subtotal</span>
+        <span><%= subTotal.toLocaleString() %> tk</span>
+      </div>
+      <div class="row">
+        <span>Discount</span>
+        <span>- <%= discount.toLocaleString() %> tk</span>
+      </div>
+      <div class="row">
+        <span>Tax</span>
+        <span><%= tax.toLocaleString() %> tk</span>
+      </div>
+
+      <div class="total">
+        <div class="row">
+          <strong>Grand Total</strong>
+          <strong><%= grandTotal.toLocaleString() %> tk</strong>
+        </div>
+      </div>
+
+      <a href="<%= pdfUrl %>" target="_blank" class="btn">
+        View / Download Invoice
+      </a>
+    </div>
+  </body>
+</html>

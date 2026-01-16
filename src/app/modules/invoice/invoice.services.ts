@@ -1,5 +1,6 @@
 import { deleteFileFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from '../../utils/QueryBuilder';
+import sendEmail from '../../utils/sendEmail';
 import { IInvoice } from './invoice.interface';
 import { Invoice } from './invoice.model';
 import { generateInvoicePDF } from './invoicePdfGenarator';
@@ -31,6 +32,36 @@ const createInvoice = async (payload: IInvoice) => {
   const pdfUrl = await generateInvoicePDF(invoice);
   invoice.pdfUrl = pdfUrl;
   await invoice.save();
+
+  return invoice;
+};
+
+const sendInvoiceToUser = async (email: string, id: string) => {
+  const invoice = await Invoice.findById(id);
+
+  if (!invoice) {
+    throw new Error('Invoice not found');
+  }
+
+  if (!invoice.pdfUrl) {
+    throw new Error('Invoice PDF not generated');
+  }
+
+  await sendEmail({
+    to: email,
+    subject: `Invoice ${invoice.invoiceNo}`,
+    templateName: 'invoice-voucher',
+    templateData: {
+      invoiceNo: invoice.invoiceNo,
+      invoiceDate: invoice.invoiceDate,
+      payableTo: invoice.payableTo,
+      subTotal: invoice.subTotal,
+      discount: invoice.discount,
+      tax: invoice.tax,
+      grandTotal: invoice.grandTotal,
+      pdfUrl: invoice.pdfUrl,
+    },
+  });
 
   return invoice;
 };
@@ -77,4 +108,5 @@ export const InvoiceService = {
   getAllInvoice,
   getSingleInvoice,
   deleteSingleInvoice,
+  sendInvoiceToUser,
 };
