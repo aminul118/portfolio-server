@@ -6,9 +6,7 @@ import { InvoiceService } from './invoice.services';
 
 const createInvoice = catchAsync(async (req: Request, res: Response) => {
   const payload = req.body;
-
   const data = await InvoiceService.createInvoice(payload);
-
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
@@ -19,9 +17,7 @@ const createInvoice = catchAsync(async (req: Request, res: Response) => {
 
 const getAllInvoice = catchAsync(async (req: Request, res: Response) => {
   const query = req.query as Record<string, string>;
-
   const { data, meta } = await InvoiceService.getAllInvoice(query);
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -33,9 +29,7 @@ const getAllInvoice = catchAsync(async (req: Request, res: Response) => {
 
 const getSingleInvoice = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-
   const data = await InvoiceService.getSingleInvoice(id);
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,
@@ -46,9 +40,7 @@ const getSingleInvoice = catchAsync(async (req: Request, res: Response) => {
 
 const deleteSingleInvoice = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
-
   const data = await InvoiceService.deleteSingleInvoice(id);
-
   sendResponse(res, {
     statusCode: httpStatus.OK,
     success: true,

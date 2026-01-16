@@ -3,9 +3,9 @@ import { InvoiceControllers } from './invoice.controller';
 
 const router = Router();
 
-router.get('', InvoiceControllers.getAllInvoice);
+router.get('/get-all', InvoiceControllers.getAllInvoice);
 router.get('/:id', InvoiceControllers.getSingleInvoice);
-router.post('', InvoiceControllers.createInvoice);
+router.post('/create', InvoiceControllers.createInvoice);
 router.delete('/:id', InvoiceControllers.deleteSingleInvoice);
 
 export const InvoiceRouter = router;

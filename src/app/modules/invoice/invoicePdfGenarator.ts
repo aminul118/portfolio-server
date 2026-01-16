@@ -32,6 +32,21 @@ export const generateInvoicePDF = async (
         streamifier.createReadStream(pdfBuffer).pipe(uploadStream);
       });
 
+      /* ===== HELPERS ===== */
+      const formatTk = (amount: number) => `${amount.toLocaleString()} tk`;
+
+      const formatDate = (date: Date | string) =>
+        new Date(date).toLocaleDateString('en-GB', {
+          day: 'numeric',
+          month: 'long',
+          year: 'numeric',
+        });
+
+      /* ===== CONSTANTS ===== */
+      const TABLE_X = 50;
+      const TABLE_WIDTH = 495;
+      const ROW_HEIGHT = 40;
+
       /* ===== COLORS ===== */
       const DARK_BLUE = '#0B3A67';
       const LIGHT_BLUE = '#EAF4F8';
@@ -39,164 +54,187 @@ export const generateInvoicePDF = async (
       const TEXT_BLUE = '#0A2F55';
       const SOFT_GRAY = '#F4F6F8';
 
-      /* ===== HEADER ===== */
+      /* ===== TABLE COLUMNS ===== */
+      const COLUMNS = {
+        description: { x: TABLE_X + 10, width: 235 },
+        quantity: { x: TABLE_X + 255, width: 90 },
+        price: { x: TABLE_X + 350, width: 65 },
+        total: { x: TABLE_X + 420, width: 50 },
+      };
+
+      /* ===== FOOTER ===== */
+      let drawingFooter = false;
+
+      const drawFooter = (note?: string) => {
+        if (drawingFooter) return;
+        drawingFooter = true;
+
+        const footerHeight = 48;
+        const footerY = doc.page.height - footerHeight;
+
+        doc.save();
+        doc.rect(0, footerY, doc.page.width, footerHeight).fill(DARK_BLUE);
+        doc.restore();
+
+        if (note) {
+          doc
+            .fillColor('white')
+            .fontSize(10)
+            .text(note, 50, footerY + 16, {
+              width: doc.page.width - 100,
+              height: footerHeight - 20,
+              align: 'center',
+              lineBreak: false,
+            });
+        }
+
+        drawingFooter = false;
+      };
+
+      doc.on('pageAdded', () => drawFooter(invoice.note));
+
+      /* ===== INVOICE TITLE ===== */
+      doc.fontSize(38).fillColor(TEXT_BLUE).text('INVOICE', 50, 60);
+
       doc
-        .fontSize(16)
+        .fontSize(12)
+        .text(`Invoice No: ${invoice.invoiceNo}`, 250, 65, {
+          width: 300,
+          align: 'right',
+        })
+        .text(`Date: ${formatDate(invoice.invoiceDate)}`, 250, 90, {
+          width: 300,
+          align: 'right',
+        });
+
+      /* ===== COMPANY INFO (LEFT) ===== */
+      doc
+        .fontSize(18)
         .fillColor(TEXT_BLUE)
-        .text('AMINUL ', 50, 50, { continued: true })
+        .text('AMINUL ', 50, 130, { continued: true })
         .fillColor('red')
         .text('ISLAM');
 
-      doc.fontSize(10).fillColor(TEXT_BLUE).text('Web developer', 50, 70);
-      doc.fontSize(38).fillColor(TEXT_BLUE).text('INVOICE', 50, 120);
+      doc
+        .fillColor(TEXT_BLUE)
+        .fontSize(11)
+        .text('Web Developer', 50, 158)
+        .text('Website: www.aminuldev.site', 50, 176)
+        .text('Phone: 017 810 820 64', 50, 194);
+
+      /* ===== PAYABLE TO (RIGHT) ===== */
+      doc.fontSize(18).fillColor(TEXT_BLUE).text('PAYABLE TO', 330, 130, {
+        width: 215,
+        align: 'right',
+      });
 
       doc
-        .fontSize(11)
-        .text(`Invoice No: ${invoice.invoiceNo}`, 360, 130, {
-          width: 180,
+        .fontSize(12)
+        .text(invoice.payableTo.name, 330, 158, {
+          width: 215,
           align: 'right',
-          lineBreak: false,
         })
-        .text(
-          `Date: ${new Date(invoice.invoiceDate).toDateString()}`,
-          360,
-          150,
-          { width: 180, align: 'right', lineBreak: false },
-        );
+        .text(invoice.payableTo.address || '', 330, 178, {
+          width: 215,
+          align: 'right',
+        })
+        .text(`Phone: ${invoice.payableTo.phone || ''}`, 330, 198, {
+          width: 215,
+          align: 'right',
+        });
 
-      /* ===== PAYABLE TO ===== */
-      doc.fontSize(13).text('PAYABLE TO', 50, 200);
-      doc
-        .fontSize(11)
-        .text(invoice.payableTo.name, 50, 225)
-        .text(invoice.payableTo.address || '', 50, 242)
-        .text(`Phone: ${invoice.payableTo.phone || ''}`, 50, 260);
+      /* ===== TABLE HEADER ===== */
+      let y = 310;
 
-      /* ===== TABLE ===== */
-      const tableTop = 300;
-      const rowHeight = 34;
-
-      doc.rect(50, tableTop, 495, rowHeight).fill(DARK_BLUE);
+      doc.rect(TABLE_X, y, TABLE_WIDTH, ROW_HEIGHT).fill(DARK_BLUE);
 
       doc
         .fillColor('white')
         .fontSize(11)
-        .text('ITEM DESCRIPTION', 55, tableTop + 10)
-        .text('QUANTITY', 255, tableTop + 10)
-        .text('PRICE', 345, tableTop + 10)
-        .text('TOTAL', 435, tableTop + 10);
+        .text('ITEM DESCRIPTION', COLUMNS.description.x, y + 12)
+        .text('QUANTITY', COLUMNS.quantity.x, y + 12, {
+          width: COLUMNS.quantity.width,
+          align: 'center',
+        })
+        .text('PRICE', COLUMNS.price.x, y + 12, {
+          width: COLUMNS.price.width,
+          align: 'center',
+        })
+        .text('TOTAL', COLUMNS.total.x, y + 12, {
+          width: COLUMNS.total.width,
+          align: 'center',
+        });
 
-      let y = tableTop + rowHeight;
+      y += ROW_HEIGHT;
 
+      /* ===== TABLE ROWS ===== */
       invoice.items.forEach((item, index) => {
         doc
-          .rect(50, y, 495, rowHeight)
+          .rect(TABLE_X, y, TABLE_WIDTH, ROW_HEIGHT)
           .fill(index % 2 === 0 ? LIGHT_BLUE : ROW_BLUE);
 
         doc
           .fillColor(TEXT_BLUE)
           .fontSize(10)
-          .text(item.itemName, 55, y + 10, { width: 180 })
-          .text(item.quantity, 255, y + 10)
-          .text(item.price.toLocaleString(), 345, y + 10, {
-            width: 70,
-            align: 'right',
-            lineBreak: false,
+          .text(item.itemName, COLUMNS.description.x, y + 12)
+          .text(item.quantity, COLUMNS.quantity.x, y + 12, {
+            width: COLUMNS.quantity.width,
+            align: 'center',
           })
-          .text(item.total.toLocaleString(), 435, y + 10, {
-            width: 70,
+          .text(formatTk(item.price), COLUMNS.price.x, y + 12, {
+            width: COLUMNS.price.width,
             align: 'right',
-            lineBreak: false,
+          })
+          .text(formatTk(item.total), COLUMNS.total.x, y + 12, {
+            width: COLUMNS.total.width,
+            align: 'right',
           });
 
-        y += rowHeight;
+        y += ROW_HEIGHT;
       });
 
-      /* ===== TOTALS (SHIFTED LEFT, A4 SAFE) ===== */
-      const MIN_TOTAL_Y = 480;
-      const totalY = Math.max(y + 40, MIN_TOTAL_Y);
-
-      const totalBoxX = 270;
+      /* ===== TOTALS ===== */
       const totalBoxWidth = 230;
+      const totalBoxX = TABLE_X + TABLE_WIDTH - totalBoxWidth;
+      const totalY = y + 30;
 
-      // light box
+      const VALUE_X = totalBoxX + 100;
+      const VALUE_WIDTH = 120;
+
       doc.rect(totalBoxX, totalY, totalBoxWidth, 95).fill(SOFT_GRAY);
 
-      doc
-        .fillColor(TEXT_BLUE)
-        .fontSize(11)
-        .text('SUB TOTAL', totalBoxX + 10, totalY + 18)
-        .text('DISCOUNT', totalBoxX + 10, totalY + 48);
+      doc.fillColor(TEXT_BLUE).fontSize(11);
+      doc.text('SUB TOTAL', totalBoxX + 10, totalY + 18);
+      doc.text(formatTk(invoice.subTotal), VALUE_X, totalY + 18, {
+        width: VALUE_WIDTH,
+        align: 'right',
+      });
 
-      doc.text(
-        invoice.subTotal.toLocaleString(),
-        totalBoxX + 160,
-        totalY + 18,
-        {
-          width: 60,
-          align: 'right',
-          lineBreak: false,
-        },
-      );
+      doc.text('DISCOUNT', totalBoxX + 10, totalY + 48);
+      doc.text(formatTk(invoice.discount), VALUE_X, totalY + 48, {
+        width: VALUE_WIDTH,
+        align: 'right',
+      });
 
-      doc.text(
-        invoice.discount.toLocaleString(),
-        totalBoxX + 160,
-        totalY + 48,
-        {
-          width: 60,
-          align: 'right',
-          lineBreak: false,
-        },
-      );
-
-      // dark bar
       doc.rect(totalBoxX, totalY + 95, totalBoxWidth, 65).fill(DARK_BLUE);
 
-      doc
-        .fillColor('white')
-        .fontSize(11)
-        .text('TAX BDT', totalBoxX + 10, totalY + 115)
-        .text('GRAND TOTAL BDT', totalBoxX, totalY + 140);
+      doc.fillColor('white');
+      doc.text('TAX (15%)', totalBoxX + 10, totalY + 115);
+      doc.text(formatTk(invoice.tax || 0), VALUE_X, totalY + 115, {
+        width: VALUE_WIDTH,
+        align: 'right',
+      });
 
-      doc.text(
-        (invoice.tax || 0).toFixed(2) + ' tk',
-        totalBoxX + 160,
-        totalY + 115,
-        {
-          width: 60,
-          align: 'right',
-          lineBreak: false,
-        },
-      );
+      doc.text('GRAND TOTAL', totalBoxX + 10, totalY + 140);
+      doc.text(formatTk(invoice.grandTotal), VALUE_X, totalY + 140, {
+        width: VALUE_WIDTH,
+        align: 'right',
+      });
 
-      doc.text(
-        `${invoice.grandTotal.toLocaleString()} tk`,
-        totalBoxX + 160,
-        totalY + 140,
-        {
-          width: 80,
-          align: 'right',
-          lineBreak: false,
-        },
-      );
-
-      /* ===== FOOTER (NO BLUE BAR) ===== */
-      const footerY = doc.page.height - 90;
-
-      doc
-        .fillColor(TEXT_BLUE)
-        .fontSize(10)
-        .text('www.aminuldev.site', 50, footerY)
-        .text('01781082064', 400, footerY);
-
-      if (invoice.note) {
-        doc.fontSize(9).text(invoice.note, 50, footerY + 20, { width: 495 });
-      }
-
+      drawFooter(invoice.note);
       doc.end();
-    } catch (err) {
-      reject(err);
+    } catch (error) {
+      reject(error);
     }
   });
 };
