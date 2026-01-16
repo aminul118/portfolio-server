@@ -1,3 +1,4 @@
+import { deleteFileFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import { IInvoice } from './invoice.interface';
 import { Invoice } from './invoice.model';
@@ -61,6 +62,12 @@ const getSingleInvoice = async (id: string) => {
 };
 
 const deleteSingleInvoice = async (id: string) => {
+  const exists = await Invoice.findById(id);
+
+  if (exists?.pdfUrl) {
+    await deleteFileFromCloudinary(exists.pdfUrl);
+  }
+
   const result = await Invoice.findByIdAndDelete(id);
   return result;
 };

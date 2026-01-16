@@ -9,7 +9,7 @@ import { handlerZodError } from '../helpers/handlerZodError';
 import { TErrorSources } from '../interfaces/error.types';
 import envVars from '../config/env';
 import { handlerDuplicateError } from '../helpers/handlerDuplicateError';
-import { deleteImageFromCLoudinary } from '../config/cloudinary.config';
+import { deleteFileFromCloudinary } from '../config/cloudinary.config';
 
 export const globalErrorHandler = async (
   err: any,
@@ -23,13 +23,15 @@ export const globalErrorHandler = async (
 
   // console.log({ file: req.files });
   if (req.file) {
-    await deleteImageFromCLoudinary(req.file.path);
+    await deleteFileFromCloudinary(req.file.path);
   }
 
   if (req.files && Array.isArray(req.files) && req.files.length) {
-    const imageUrls = (req.files as Express.Multer.File[]).map((file) => file.path);
+    const imageUrls = (req.files as Express.Multer.File[]).map(
+      (file) => file.path,
+    );
 
-    await Promise.all(imageUrls.map((url) => deleteImageFromCLoudinary(url)));
+    await Promise.all(imageUrls.map((url) => deleteFileFromCloudinary(url)));
   }
 
   let errorSources: TErrorSources[] = [];

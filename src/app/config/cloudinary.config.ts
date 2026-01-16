@@ -9,20 +9,26 @@ cloudinary.config({
   api_secret: envVars.CLOUDINARY.CLOUDINARY_API_SECRET,
 });
 
-export const cloudinaryUploads = cloudinary;
+const cloudinaryUploads = cloudinary;
 
-export const deleteImageFromCLoudinary = async (url: string) => {
+const deleteFileFromCloudinary = async (url: string) => {
   try {
-    const regex = /\/v\d+\/(.*?)\.(pdf|jpg|jpeg|png)$/i;
+    const regex = /\/v\d+\/(.+)\.(pdf|jpg|jpeg|png)$/i;
     const match = url.match(regex);
 
-    if (match?.[1]) {
-      await cloudinary.uploader.destroy(match[1], {
-        resource_type: 'image',
-        type: 'upload',
-      });
-    }
+    if (!match) return;
+
+    const publicId = match[1];
+    const extension = match[2].toLowerCase();
+
+    const resourceType = extension === 'pdf' ? 'raw' : 'image';
+
+    await cloudinary.uploader.destroy(publicId, {
+      resource_type: resourceType,
+    });
   } catch (error: any) {
     throw new AppError(401, 'Cloudinary deletion failed', error.message);
   }
 };
+
+export { deleteFileFromCloudinary, cloudinaryUploads };
