@@ -2,7 +2,10 @@ export interface EnvConfig {
   PORT: string;
   DB_URL: string;
   NODE_ENV: 'development' | 'production';
-
+  JWT_ACCESS_SECRET: string;
+  JWT_ACCESS_EXPIRES: string;
+  JWT_REFRESH_SECRET: string;
+  JWT_REFRESH_EXPIRES: string;
   BCRYPT_SALT_ROUND: number;
   SUPER_ADMIN_EMAIL: string;
   SUPER_ADMIN_PASSWORD: string;
@@ -13,6 +16,19 @@ export interface EnvConfig {
   FRONTEND_URL: string;
   ADMIN_NAME: string;
   ADMIN_EMAIL: string;
+  OPENAI_API_KEY: string;
+  SSL: {
+    SSL_STORE_ID: string;
+    SSL_STORE_PASS: string;
+    SSL_PAYMENT_API: string;
+    SSL_VALIDATION_API: string;
+    SSL_SUCCESS_BACKEND_URL: string;
+    SSL_FAIL_BACKEND_URL: string;
+    SSL_CANCEL_BACKEND_URL: string;
+    SSL_SUCCESS_FRONTEND_URL: string;
+    SSL_FAIL_FRONTEND_URL: string;
+    SSL_CANCEL_FRONTEND_URL: string;
+  };
   CLOUDINARY: {
     CLOUDINARY_NAME: string;
     CLOUDINARY_API_KEY: string;
@@ -30,11 +46,5 @@ export interface EnvConfig {
     REDIS_PORT: number;
     REDIS_USERNAME: string;
     REDIS_PASSWORD: string;
-  };
-  JWT: {
-    JWT_ACCESS_SECRET: string;
-    JWT_ACCESS_EXPIRES: string;
-    JWT_REFRESH_SECRET: string;
-    JWT_REFRESH_EXPIRES: string;
   };
 }

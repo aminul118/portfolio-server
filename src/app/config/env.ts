@@ -1,28 +1,21 @@
-// src/config/env.ts
 import dotenv from 'dotenv';
 import path from 'path';
 import { EnvConfig } from '../types';
+import getEnv from '../helpers/getEnv';
 
-// Decide file based on NODE_ENV
 const isProd = process.env.NODE_ENV === 'production';
 export const envFile = isProd ? '.env.production' : '.env.local';
 
 dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 
-// Helper to fetch env vars
-const getEnv = (key: string): string => {
-  const value = process.env[key];
-  if (!value) {
-    throw new Error(`Missing required environment variable: ${key}`);
-  }
-  return value;
-};
-
 const loadEnvVariables = (): EnvConfig => ({
   PORT: getEnv('PORT'),
   DB_URL: getEnv('DB_URL'),
   NODE_ENV: getEnv('NODE_ENV') as 'development' | 'production',
-
+  JWT_ACCESS_SECRET: getEnv('JWT_ACCESS_SECRET'),
+  JWT_ACCESS_EXPIRES: getEnv('JWT_ACCESS_EXPIRES'),
+  JWT_REFRESH_SECRET: getEnv('JWT_REFRESH_SECRET'),
+  JWT_REFRESH_EXPIRES: getEnv('JWT_REFRESH_EXPIRES'),
   BCRYPT_SALT_ROUND: Number(getEnv('BCRYPT_SALT_ROUND')),
   SUPER_ADMIN_EMAIL: getEnv('SUPER_ADMIN_EMAIL'),
   SUPER_ADMIN_PASSWORD: getEnv('SUPER_ADMIN_PASSWORD'),
@@ -33,6 +26,19 @@ const loadEnvVariables = (): EnvConfig => ({
   FRONTEND_URL: getEnv('FRONTEND_URL'),
   ADMIN_NAME: getEnv('ADMIN_NAME'),
   ADMIN_EMAIL: getEnv('ADMIN_EMAIL'),
+  OPENAI_API_KEY: getEnv('OPENAI_API_KEY'),
+  SSL: {
+    SSL_STORE_ID: getEnv('SSL_STORE_ID'),
+    SSL_STORE_PASS: getEnv('SSL_STORE_PASS'),
+    SSL_PAYMENT_API: getEnv('SSL_PAYMENT_API'),
+    SSL_VALIDATION_API: getEnv('SSL_VALIDATION_API'),
+    SSL_SUCCESS_BACKEND_URL: getEnv('SSL_SUCCESS_BACKEND_URL'),
+    SSL_FAIL_BACKEND_URL: getEnv('SSL_FAIL_BACKEND_URL'),
+    SSL_CANCEL_BACKEND_URL: getEnv('SSL_CANCEL_BACKEND_URL'),
+    SSL_SUCCESS_FRONTEND_URL: getEnv('SSL_SUCCESS_FRONTEND_URL'),
+    SSL_FAIL_FRONTEND_URL: getEnv('SSL_FAIL_FRONTEND_URL'),
+    SSL_CANCEL_FRONTEND_URL: getEnv('SSL_CANCEL_FRONTEND_URL'),
+  },
   CLOUDINARY: {
     CLOUDINARY_NAME: getEnv('CLOUDINARY_NAME'),
     CLOUDINARY_API_KEY: getEnv('CLOUDINARY_API_KEY'),
@@ -50,12 +56,6 @@ const loadEnvVariables = (): EnvConfig => ({
     REDIS_PORT: Number(getEnv('REDIS_PORT')),
     REDIS_USERNAME: getEnv('REDIS_USERNAME'),
     REDIS_PASSWORD: getEnv('REDIS_PASSWORD'),
-  },
-  JWT: {
-    JWT_ACCESS_SECRET: getEnv('JWT_ACCESS_SECRET'),
-    JWT_ACCESS_EXPIRES: getEnv('JWT_ACCESS_EXPIRES'),
-    JWT_REFRESH_SECRET: getEnv('JWT_REFRESH_SECRET'),
-    JWT_REFRESH_EXPIRES: getEnv('JWT_REFRESH_EXPIRES'),
   },
 });
 

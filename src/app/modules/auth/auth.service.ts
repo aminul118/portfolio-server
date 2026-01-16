@@ -95,7 +95,7 @@ const forgotPassword = async (email: string) => {
     role: isUserExist.role,
   };
 
-  const resetToken = jwt.sign(jwtPayload, envVars.JWT.JWT_ACCESS_SECRET, {
+  const resetToken = jwt.sign(jwtPayload, envVars.JWT_ACCESS_SECRET, {
     expiresIn: '10m',
   });
 

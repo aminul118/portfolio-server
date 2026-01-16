@@ -4,15 +4,8 @@ import { Counter } from '../counter/counter.model';
 
 const authProviderSchema = new Schema<IAuthProvider>(
   {
-    provider: {
-      type: String,
-      enum: ['google', 'credentials'],
-      required: true,
-    },
-    providerId: {
-      type: String,
-      required: true,
-    },
+    provider: { type: String, enum: ['google', 'credentials'], required: true },
+    providerId: { type: String, required: true },
   },
   {
     _id: false,
@@ -23,11 +16,7 @@ const authProviderSchema = new Schema<IAuthProvider>(
 const userSchema = new Schema<IUser>(
   {
     firstName: { type: String, required: true, trim: true },
-    lastName: {
-      type: String,
-      required: true,
-      trim: true,
-    },
+    lastName: { type: String, required: true, trim: true },
     email: {
       type: String,
       required: true,
@@ -35,45 +24,20 @@ const userSchema = new Schema<IUser>(
       trim: true,
       lowercase: true,
     },
-    phone: {
-      type: String,
-      required: true,
-      trim: true,
-    },
-    address: {
-      type: String,
-      trim: true,
-    },
-    picture: {
-      type: String,
-    },
-    password: {
-      type: String,
-      required: true,
-    },
-    role: {
-      type: String,
-      enum: Object.values(Role),
-      default: Role.USER,
-    },
-    userId: {
-      type: Number,
-      unique: true,
-    },
-    isDeleted: {
-      type: Boolean,
-      default: false,
-    },
+    phone: { type: String, required: true, trim: true },
+    address: { type: String, trim: true },
+    picture: { type: String },
+    password: { type: String, required: true },
+    role: { type: String, enum: Object.values(Role), default: Role.USER },
+    userId: { type: Number, unique: true },
+    isDeleted: { type: Boolean, default: false },
     isActive: {
       type: String,
       enum: Object.values(IsActive),
       default: IsActive.ACTIVE,
     },
     auths: [authProviderSchema],
-    isVerified: {
-      type: Boolean,
-      default: false,
-    },
+    isVerified: { type: Boolean, default: false },
   },
   {
     timestamps: true,

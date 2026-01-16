@@ -1,5 +1,4 @@
 import { Response } from 'express';
-import envVars from '../config/env';
 
 export interface AuthTokens {
   accessToken?: string;
@@ -9,7 +8,7 @@ export interface AuthTokens {
 export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
   const isProduction = process.env.NODE_ENV === 'production';
   const sameSite = isProduction ? 'none' : 'lax'; // allow cross-subdomain in prod
-  const domain = isProduction ? '.aminuldev.site' : undefined;
+  const domain = isProduction ? '.shrlbd.com' : undefined;
 
   if (tokenInfo.accessToken) {
     res.cookie('accessToken', tokenInfo.accessToken, {
@@ -17,8 +16,8 @@ export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
       secure: isProduction,
       sameSite,
       domain,
-      path: '/',
-      maxAge: Number(envVars.JWT.JWT_ACCESS_EXPIRES),
+      path: '/', // always include
+      maxAge: 1000 * 60 * 60 * 24, // 1 day
     });
   }
 
@@ -29,7 +28,7 @@ export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
       sameSite,
       domain,
       path: '/',
-      maxAge: Number(envVars.JWT.JWT_REFRESH_EXPIRES),
+      maxAge: 1000 * 60 * 60 * 24 * 7, // 7 days
     });
   }
 };
