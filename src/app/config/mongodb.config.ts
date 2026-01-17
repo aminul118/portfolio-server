@@ -1,13 +1,14 @@
-/* eslint-disable no-console */
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import mongoose from 'mongoose';
 import envVars from './env';
+import logger from '../utils/logger';
 
 const connectDB = async () => {
   try {
     await mongoose.connect(envVars.DB_URL);
-    console.log('✅ Connected to MongoDB');
-  } catch (error) {
-    console.log('MongoDB Connection failed', error);
+    logger('log', '✅ Connected to MongoDB');
+  } catch (error: any) {
+    logger('error', ' MongoDB connection failed', error.message);
   }
 };
 
