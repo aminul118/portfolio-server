@@ -1,6 +1,7 @@
 import { deleteFileFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import sendEmail from '../../utils/sendEmail';
+import { invoiceSearchableField } from './invoice.constant';
 import { IInvoice } from './invoice.interface';
 import { Invoice } from './invoice.model';
 import { generateInvoicePDF } from './invoicePdfGenarator';
@@ -14,12 +15,9 @@ const calculateTotals = (items: IInvoice['items'], discount = 0, tax = 0) => {
 };
 
 const createInvoice = async (payload: IInvoice) => {
+  const { items, discount, tax } = payload;
   const invoiceNo = generateInvoiceNo();
-  const { subTotal, grandTotal } = calculateTotals(
-    payload.items,
-    payload.discount,
-    payload.tax,
-  );
+  const { subTotal, grandTotal } = calculateTotals(items, discount, tax);
 
   const invoice = await Invoice.create({
     ...payload,
@@ -79,19 +77,30 @@ const sendInvoiceToUser = async (email: string, id: string) => {
     throw new Error('Invoice PDF not generated');
   }
 
+  const {
+    invoiceNo,
+    invoiceDate,
+    payableTo,
+    subTotal,
+    discount,
+    tax,
+    grandTotal,
+    pdfUrl,
+  } = invoice;
+
   await sendEmail({
     to: email,
-    subject: `Invoice ${invoice.invoiceNo}`,
+    subject: `Invoice ${invoiceNo}`,
     templateName: 'invoice-voucher',
     templateData: {
-      invoiceNo: invoice.invoiceNo,
-      invoiceDate: invoice.invoiceDate,
-      payableTo: invoice.payableTo,
-      subTotal: invoice.subTotal,
-      discount: invoice.discount,
-      tax: invoice.tax,
-      grandTotal: invoice.grandTotal,
-      pdfUrl: invoice.pdfUrl,
+      invoiceNo,
+      invoiceDate,
+      payableTo,
+      subTotal,
+      discount,
+      tax,
+      grandTotal,
+      pdfUrl,
     },
   });
 
@@ -102,7 +111,7 @@ const getAllInvoice = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(Invoice.find(), query);
 
   const invoices = await queryBuilder
-    .search(['invoiceNo', 'payableTo.name'])
+    .search(invoiceSearchableField)
     .filter()
     .fields()
     .paginate()

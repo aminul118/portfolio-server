@@ -2,6 +2,7 @@ import PDFDocument from 'pdfkit';
 import streamifier from 'streamifier';
 import { IInvoice } from './invoice.interface';
 import { cloudinaryUploads } from '../../config/cloudinary.config';
+import { formatDate } from '../../utils/formatter';
 
 export const generateInvoicePDF = async (
   invoice: IInvoice,
@@ -34,13 +35,6 @@ export const generateInvoicePDF = async (
 
       /* ===== HELPERS ===== */
       const formatTk = (amount: number) => `${amount.toLocaleString()} tk`;
-
-      const formatDate = (date: Date | string) =>
-        new Date(date).toLocaleDateString('en-GB', {
-          day: 'numeric',
-          month: 'long',
-          year: 'numeric',
-        });
 
       /* ===== CONSTANTS ===== */
       const TABLE_X = 50;
@@ -145,7 +139,7 @@ export const generateInvoicePDF = async (
         .fontSize(11)
         .text('Web Developer', 50, 158)
         .text('Website: www.aminuldev.site', 50, 176)
-        .text('Phone: 017 810 820 64', 50, 194);
+        .text('Phone: 01781-082064', 50, 194);
 
       /* ===== PAYABLE TO (RIGHT) ===== */
       doc.fontSize(18).fillColor(TEXT_BLUE).text('PAYABLE TO', 330, 130, {
