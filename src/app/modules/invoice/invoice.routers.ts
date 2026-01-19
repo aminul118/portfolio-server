@@ -6,6 +6,7 @@ const router = Router();
 router.get('/get-all', InvoiceControllers.getAllInvoice);
 router.get('/:id', InvoiceControllers.getSingleInvoice);
 router.post('/create', InvoiceControllers.createInvoice);
+router.patch('/update/:id', InvoiceControllers.updateInvoice);
 router.post('/:id/send', InvoiceControllers.sendInvoiceToUser);
 router.delete('/:id', InvoiceControllers.deleteSingleInvoice);
 

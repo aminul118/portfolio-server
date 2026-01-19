@@ -27,11 +27,14 @@ const invoiceSchema = new Schema<IInvoice>(
     grandTotal: { type: Number, required: true },
     pdfUrl: { type: String },
     note: { type: String },
+
+    status: {
+      type: String,
+      enum: ['PAID', 'UNPAID', 'PENDING'],
+      default: 'PENDING',
+    },
   },
-  {
-    timestamps: true,
-    versionKey: false,
-  },
+  { timestamps: true, versionKey: false },
 );
 
 const Invoice = model<IInvoice>('Invoice', invoiceSchema);

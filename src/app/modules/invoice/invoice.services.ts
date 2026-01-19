@@ -36,6 +36,38 @@ const createInvoice = async (payload: IInvoice) => {
   return invoice;
 };
 
+const updateInvoice = async (id: string, payload: Partial<IInvoice>) => {
+  const existingInvoice = await Invoice.findById(id);
+
+  if (!existingInvoice) {
+    throw new Error('Invoice not found');
+  }
+
+  const statusChanged =
+    payload.status && payload.status !== existingInvoice.status;
+
+  // Update invoice first
+  Object.assign(existingInvoice, payload);
+  await existingInvoice.save();
+
+  // If status changed → regenerate PDF
+  if (statusChanged) {
+    // 1delete old pdf
+    if (existingInvoice.pdfUrl) {
+      await deleteFileFromCloudinary(existingInvoice.pdfUrl);
+    }
+
+    //  generate new pdf with updated status
+    const newPdfUrl = await generateInvoicePDF(existingInvoice);
+
+    // save new pdf url
+    existingInvoice.pdfUrl = newPdfUrl;
+    await existingInvoice.save();
+  }
+
+  return existingInvoice;
+};
+
 const sendInvoiceToUser = async (email: string, id: string) => {
   const invoice = await Invoice.findById(id);
 
@@ -109,4 +141,5 @@ export const InvoiceService = {
   getSingleInvoice,
   deleteSingleInvoice,
   sendInvoiceToUser,
+  updateInvoice,
 };

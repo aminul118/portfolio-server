@@ -12,10 +12,9 @@ export interface IPayableTo {
 }
 
 export interface IInvoice {
-  _id?: string;
   invoiceNo: string;
   invoiceDate: Date;
-  payableTo: IPayableTo
+  payableTo: IPayableTo;
   items: IInvoiceItem[];
   subTotal: number;
   discount: number;
@@ -23,6 +22,5 @@ export interface IInvoice {
   grandTotal: number;
   pdfUrl?: string;
   note?: string;
-  createdAt?: Date;
-  updatedAt?: Date;
+  status: 'PAID' | 'UNPAID' | 'PENDING';
 }

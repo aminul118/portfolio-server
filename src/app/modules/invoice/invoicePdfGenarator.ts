@@ -54,6 +54,29 @@ export const generateInvoicePDF = async (
       const TEXT_BLUE = '#0A2F55';
       const SOFT_GRAY = '#F4F6F8';
 
+      /* ===== STATUS SEAL ===== */
+      const drawStatusSeal = (status: IInvoice['status']) => {
+        let color = '#999999';
+
+        if (status === 'PAID') color = '#2ECC71';
+        if (status === 'UNPAID') color = '#E74C3C';
+        if (status === 'PENDING') color = '#F39C12';
+
+        doc.save();
+
+        doc
+          .rotate(-25, { origin: [300, 250] })
+          .fontSize(72)
+          .fillColor(color)
+          .opacity(0.18)
+          .text(status, 140, 220, {
+            align: 'center',
+            width: 350,
+          });
+
+        doc.restore();
+      };
+
       /* ===== TABLE COLUMNS ===== */
       const COLUMNS = {
         description: { x: TABLE_X + 10, width: 235 },
@@ -82,9 +105,7 @@ export const generateInvoicePDF = async (
             .fontSize(10)
             .text(note, 50, footerY + 16, {
               width: doc.page.width - 100,
-              height: footerHeight - 20,
               align: 'center',
-              lineBreak: false,
             });
         }
 
@@ -96,8 +117,12 @@ export const generateInvoicePDF = async (
       /* ===== INVOICE TITLE ===== */
       doc.fontSize(38).fillColor(TEXT_BLUE).text('INVOICE', 50, 60);
 
+      // 🔥 STATUS SEAL
+      drawStatusSeal(invoice.status || 'PENDING');
+
       doc
         .fontSize(12)
+        .fillColor(TEXT_BLUE)
         .text(`Invoice No: ${invoice.invoiceNo}`, 250, 65, {
           width: 300,
           align: 'right',

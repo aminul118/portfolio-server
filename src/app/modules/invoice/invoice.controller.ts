@@ -15,6 +15,17 @@ const createInvoice = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateInvoice = catchAsync(async (req: Request, res: Response) => {
+  const payload = req.body;
+  const data = await InvoiceService.updateInvoice(req.params.id, payload);
+  sendResponse(res, {
+    statusCode: httpStatus.CREATED,
+    success: true,
+    message: 'Invoice updated successfully',
+    data,
+  });
+});
+
 const sendInvoiceToUser = catchAsync(async (req: Request, res: Response) => {
   const { email } = req.body;
   const { id } = req.params;
@@ -77,4 +88,5 @@ export const InvoiceControllers = {
   getSingleInvoice,
   deleteSingleInvoice,
   sendInvoiceToUser,
+  updateInvoice,
 };
