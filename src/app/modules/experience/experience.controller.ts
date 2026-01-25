@@ -17,6 +17,22 @@ const createExperience = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateSingleExperience = catchAsync(
+  async (req: Request, res: Response) => {
+    const payload = req.body;
+    const { id } = req.params;
+
+    const data = await ExperienceService.updateSingleExperience(payload, id);
+
+    sendResponse(res, {
+      statusCode: httpStatus.OK,
+      success: true,
+      message: 'Experience updated successfully',
+      data,
+    });
+  },
+);
+
 const getAllExperience = catchAsync(async (req: Request, res: Response) => {
   const query = req.query as Record<string, string>;
   const { data, meta } = await ExperienceService.getAllExperience(
@@ -49,6 +65,7 @@ const deleteSingleExperience = catchAsync(
 
 export const ExperienceControllers = {
   createExperience,
+  updateSingleExperience,
   getAllExperience,
   deleteSingleExperience,
 };

@@ -1,10 +1,24 @@
+import httpStatus from 'http-status-codes';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import { experienceSearchableField } from './experience.constant';
 import { IExperience } from './experience.interface';
 import { Experience } from './experience.model';
+import AppError from '../../errorHelpers/AppError';
 
 const createExperience = async (payload: IExperience) => {
   const result = await Experience.create(payload);
+  return result;
+};
+
+const updateSingleExperience = async (payload: IExperience, id: string) => {
+  const exitsExperience = await Experience.findById(id);
+
+  if (!exitsExperience) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Experience not found');
+  }
+  const result = await Experience.findByIdAndUpdate(id, payload, {
+    new: true,
+  });
   return result;
 };
 
@@ -38,4 +52,5 @@ export const ExperienceService = {
   createExperience,
   getAllExperience,
   deleteSingleExperience,
+  updateSingleExperience,
 };
