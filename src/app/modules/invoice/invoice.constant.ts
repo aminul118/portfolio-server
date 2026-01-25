@@ -1,1 +1,1 @@
-export const invoiceSearchableField = ['payableTo.name', 'status'];
+export const invoiceSearchableField = ['payableTo.name', 'status', 'invoiceNo'];
