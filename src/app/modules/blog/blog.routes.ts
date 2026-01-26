@@ -9,7 +9,7 @@ router.post(
   '/create',
   multerUpload.fields([
     { name: 'thumbnail', maxCount: 1 },
-    { name: 'photos', maxCount: 10 },
+    { name: 'photos', maxCount: 4 },
   ]),
   BlogControllers.createBlog,
 );
