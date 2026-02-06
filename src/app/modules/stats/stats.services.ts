@@ -38,7 +38,7 @@ const getAdminStats = async () => {
     projectCount,
     invoice: {
       invoiceCount,
-      totalEarnings: totalEarningsAgg[0]?.total || 0,
+      totalEarnings: totalEarningsAgg[0]?.total - totalDueAgg[0]?.total || 0,
       totalDue: totalDueAgg[0]?.total || 0,
     },
   };
