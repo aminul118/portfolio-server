@@ -50,24 +50,28 @@ export const generateInvoicePDF = async (
       let drawingFooter = false;
 
       const drawFooter = (note?: string) => {
-        if (!note || drawingFooter) return;
+        if (drawingFooter) return;
         drawingFooter = true;
 
         const footerHeight = 48;
         const footerY = doc.page.height - footerHeight;
 
+        // Footer background (always)
         doc.save();
         doc.rect(0, footerY, doc.page.width, footerHeight).fill(DARK_BLUE);
         doc.restore();
 
-        doc
-          .font('Helvetica')
-          .fontSize(10)
-          .fillColor('white')
-          .text(note, 50, footerY + 22, {
-            width: doc.page.width - 100,
-            align: 'left',
-          });
+        // Footer text (only if note exists)
+        if (note) {
+          doc
+            .font('Helvetica')
+            .fontSize(10)
+            .fillColor('white')
+            .text(note, 50, footerY + 22, {
+              width: doc.page.width - 100,
+              align: 'left',
+            });
+        }
 
         drawingFooter = false;
       };

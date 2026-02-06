@@ -47,6 +47,7 @@ const updateInvoice = async (id: string, payload: Partial<IInvoice>) => {
   if (payload.status === 'PAID') {
     payload.paymentInfo = false;
     payload.invoiceDate = new Date();
+    payload.note = '';
   }
 
   Object.assign(existingInvoice, payload);
