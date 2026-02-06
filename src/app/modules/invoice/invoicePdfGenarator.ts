@@ -337,7 +337,7 @@ export const generateInvoicePDF = async (
           .text(`Reference: ${invoice.invoiceNo}`, boxX + 10, startY + 84);
 
         // BANK
-        const rightX = boxX + boxWidth / 2 + 10;
+        const rightX = boxX + boxWidth / 2 + 50;
 
         doc.font('Helvetica-Bold').text('Bank', rightX, startY + 40);
 
