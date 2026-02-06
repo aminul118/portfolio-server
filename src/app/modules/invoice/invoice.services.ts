@@ -33,7 +33,6 @@ const createInvoice = async (payload: IInvoice) => {
 
   return invoice;
 };
-
 const updateInvoice = async (id: string, payload: Partial<IInvoice>) => {
   const existingInvoice = await Invoice.findById(id);
 
@@ -44,21 +43,20 @@ const updateInvoice = async (id: string, payload: Partial<IInvoice>) => {
   const statusChanged =
     payload.status && payload.status !== existingInvoice.status;
 
-  // Update invoice first
+  //  AUTO REMOVE PAYMENT INFO IF PAID
+  if (payload.status === 'PAID') {
+    payload.paymentInfo = false;
+  }
+
   Object.assign(existingInvoice, payload);
   await existingInvoice.save();
 
-  // If status changed → regenerate PDF
   if (statusChanged) {
-    // 1delete old pdf
     if (existingInvoice.pdfUrl) {
       await deleteFileFromCloudinary(existingInvoice.pdfUrl);
     }
 
-    //  generate new pdf with updated status
     const newPdfUrl = await generateInvoicePDF(existingInvoice);
-
-    // save new pdf url
     existingInvoice.pdfUrl = newPdfUrl;
     await existingInvoice.save();
   }

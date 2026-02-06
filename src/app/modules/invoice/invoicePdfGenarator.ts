@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import PDFDocument from 'pdfkit';
 import streamifier from 'streamifier';
 import { IInvoice } from './invoice.interface';
@@ -276,6 +277,7 @@ export const generateInvoicePDF = async (
         width: 200,
         align: 'right',
       });
+
       doc.text('Tax', totalBoxX + 10, totalBoxY + 65);
       doc.text(formatTk(invoice.tax), totalBoxX + 10, totalBoxY + 65, {
         width: 200,
@@ -292,6 +294,64 @@ export const generateInvoicePDF = async (
           width: 200,
           align: 'right',
         });
+
+      /* =========================================================
+         PAYMENT INFO (ADDED – SAFE)
+      ========================================================= */
+      const drawPaymentInfo = (startY: number) => {
+        if (!invoice.paymentInfo) return startY;
+
+        const boxX = 50;
+        const boxWidth = 495;
+        const boxHeight = 110;
+
+        if (startY + boxHeight > doc.page.height - 80) {
+          doc.addPage();
+          startY = 100;
+        }
+
+        doc.rect(boxX, startY, boxWidth, boxHeight).fill(LIGHT_BLUE);
+
+        doc
+          .font('Helvetica-Bold')
+          .fontSize(12)
+          .fillColor(TEXT_COLOR)
+          .text('PAYMENT INFORMATION', boxX + 10, startY + 10);
+
+        doc
+          .moveTo(boxX + boxWidth / 2, startY + 35)
+          .lineTo(boxX + boxWidth / 2, startY + boxHeight - 10)
+          .strokeColor('#B0CFE0')
+          .stroke();
+
+        // BKASH
+        doc
+          .fontSize(10)
+          .font('Helvetica-Bold')
+          .text('Bkash', boxX + 10, startY + 40);
+
+        doc
+          .font('Helvetica')
+          .text('Number: 01781082064', boxX + 10, startY + 56)
+          .text('Type: Personal', boxX + 10, startY + 70)
+          .text(`Reference: ${invoice.invoiceNo}`, boxX + 10, startY + 84);
+
+        // BANK
+        const rightX = boxX + boxWidth / 2 + 10;
+
+        doc.font('Helvetica-Bold').text('Bank', rightX, startY + 40);
+
+        doc
+          .font('Helvetica')
+          .text('Bank Name: BRAC BANK PLC', rightX, startY + 56)
+          .text('A/C Name: MD AMINUL ISLAM', rightX, startY + 70)
+          .text('A/C No: 1054232850001', rightX, startY + 84);
+
+        return startY + boxHeight + 20;
+      };
+
+      let nextY = totalBoxY + 150;
+      nextY = drawPaymentInfo(nextY);
 
       /* =========================================================
          END
