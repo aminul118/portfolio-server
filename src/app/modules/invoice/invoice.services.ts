@@ -46,6 +46,7 @@ const updateInvoice = async (id: string, payload: Partial<IInvoice>) => {
   //  AUTO REMOVE PAYMENT INFO IF PAID
   if (payload.status === 'PAID') {
     payload.paymentInfo = false;
+    payload.invoiceDate = new Date();
   }
 
   Object.assign(existingInvoice, payload);
