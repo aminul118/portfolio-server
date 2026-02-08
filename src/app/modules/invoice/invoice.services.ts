@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { deleteFileFromCloudinary } from '../../config/cloudinary.config';
 import { QueryBuilder } from '../../utils/QueryBuilder';
 import sendEmail from '../../utils/sendEmail';
@@ -9,9 +10,26 @@ import { generateInvoicePDF } from './invoicePdfGenarator';
 const generateInvoiceNo = () => `INV-${Date.now()}`;
 
 const calculateTotals = (items: IInvoice['items'], discount = 0, tax = 0) => {
-  const subTotal = items.reduce((sum, i) => sum + i.total, 0);
-  const grandTotal = subTotal - discount + tax;
+  const subTotal = items.reduce((sum, i) => sum + (Number(i.total) || 0), 0);
+  const grandTotal = subTotal - (Number(discount) || 0) + (Number(tax) || 0);
   return { subTotal, grandTotal };
+};
+
+//  If any of these fields are in payload, regenerate PDF (safe + simple)
+const shouldRegeneratePdf = (payload: Partial<IInvoice>) => {
+  const keys: (keyof IInvoice)[] = [
+    'payableTo',
+    'items',
+    'discount',
+    'tax',
+    'note',
+    'paymentInfo',
+    'paymentMethod',
+    'paymentDetails',
+    'status',
+  ];
+
+  return keys.some((k) => payload[k] !== undefined);
 };
 
 const createInvoice = async (payload: IInvoice) => {
@@ -33,27 +51,55 @@ const createInvoice = async (payload: IInvoice) => {
 
   return invoice;
 };
+
 const updateInvoice = async (id: string, payload: Partial<IInvoice>) => {
   const existingInvoice = await Invoice.findById(id);
-
   if (!existingInvoice) {
     throw new Error('Invoice not found');
   }
 
-  const statusChanged =
-    payload.status && payload.status !== existingInvoice.status;
+  //  Block these fields from client updates
+  delete (payload as any).invoiceNo;
+  delete (payload as any).pdfUrl;
+  delete (payload as any).subTotal;
+  delete (payload as any).grandTotal;
 
-  //  AUTO REMOVE PAYMENT INFO IF PAID
+  // Decide whether PDF needs regeneration BEFORE we mutate too much
+  const regeneratePdf = shouldRegeneratePdf(payload);
+
+  //  If PAID: auto remove payment info + set date + clear note
   if (payload.status === 'PAID') {
     payload.paymentInfo = false;
+    payload.paymentMethod = undefined;
+    payload.paymentDetails = undefined;
     payload.invoiceDate = new Date();
-    payload.note = '';
   }
 
+  // Recalculate totals if items/discount/tax changed (or keep existing)
+  const nextItems = payload.items ?? existingInvoice.items;
+  const nextDiscount =
+    payload.discount !== undefined
+      ? payload.discount
+      : existingInvoice.discount;
+  const nextTax = payload.tax !== undefined ? payload.tax : existingInvoice.tax;
+
+  const { subTotal, grandTotal } = calculateTotals(
+    nextItems,
+    nextDiscount,
+    nextTax,
+  );
+
+  // Apply payload
   Object.assign(existingInvoice, payload);
+
+  // Always keep totals consistent
+  existingInvoice.subTotal = subTotal;
+  existingInvoice.grandTotal = grandTotal;
+
   await existingInvoice.save();
 
-  if (statusChanged) {
+  //  Regenerate PDF if any important fields changed
+  if (regeneratePdf) {
     if (existingInvoice.pdfUrl) {
       await deleteFileFromCloudinary(existingInvoice.pdfUrl);
     }

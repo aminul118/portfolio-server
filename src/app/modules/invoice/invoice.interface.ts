@@ -42,10 +42,8 @@ export interface IPaymentDetails {
 export interface IInvoice {
   invoiceNo: string;
   invoiceDate: Date;
-
   payableTo: IPayableTo;
   items: IInvoiceItem[];
-
   subTotal: number;
   discount: number;
   tax: number;
