@@ -15,6 +15,14 @@ router.post(
 );
 
 router.get('/:slug', ProjectControllers.getSingleProject);
+router.put(
+  '/:id',
+  multerUpload.fields([
+    { name: 'thumbnail', maxCount: 1 },
+    { name: 'photos', maxCount: 10 },
+  ]),
+  ProjectControllers.updateProject,
+);
 router.delete('/:id', ProjectControllers.deleteSingleProject);
 
 export const ProjectRouter = router;

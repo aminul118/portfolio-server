@@ -54,6 +54,35 @@ const getSingleProject = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateProject = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const parsedData = JSON.parse(req.body.data);
+
+  const files = req.files as {
+    thumbnail?: Express.Multer.File[];
+    photos?: Express.Multer.File[];
+  };
+
+  const payload: Record<string, unknown> = { ...parsedData };
+
+  // Only include files in payload if new ones are uploaded
+  if (files?.thumbnail?.[0]?.path) {
+    payload.thumbnail = files.thumbnail[0].path;
+  }
+  if (files?.photos && files.photos.length > 0) {
+    payload.photos = files.photos.map((file) => file.path);
+  }
+
+  const data = await ProjectServices.updateProject(id, payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Project updated successfully',
+    data,
+  });
+});
+
 const deleteSingleProject = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -71,5 +100,6 @@ export const ProjectControllers = {
   createProject,
   getAllProjects,
   getSingleProject,
+  updateProject,
   deleteSingleProject,
 };
