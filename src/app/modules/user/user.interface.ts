@@ -28,7 +28,7 @@ export interface IUser {
   password: string;
   role: Role;
   userId?: number;
-  isDeleted?: string;
+  isDeleted?: boolean;
   isActive?: IsActive;
   isVerified?: boolean;
   auths: IAuthProvider[];

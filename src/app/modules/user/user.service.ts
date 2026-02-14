@@ -8,11 +8,14 @@ import {
   IAuthProvider,
   IUser,
   Role,
+  IsActive,
   UpdateRolePayload,
 } from './user.interface';
 import sendOTP from '../otp/otp.utils';
 import { userSearchableField } from './user.constant';
 import { QueryBuilder } from '../../utils/QueryBuilder';
+import { deleteFileFromCloudinary } from '../../config/cloudinary.config';
+import { logger } from '../../utils/logger';
 
 const createUserService = async (payload: Partial<IUser>) => {
   const { email, password, ...rest } = payload;
@@ -155,6 +158,20 @@ const updateUser = async (
     }
   }
 
+  // Delete old profile picture from Cloudinary if a new one is being uploaded
+  if (
+    payload.picture &&
+    isUserExist.picture &&
+    payload.picture !== isUserExist.picture
+  ) {
+    try {
+      await deleteFileFromCloudinary(isUserExist.picture);
+    } catch (error) {
+      // Log the error but don't fail the update if deletion fails
+      logger.error('Failed to delete old profile picture:', error);
+    }
+  }
+
   // Update user safely
   const updatedUser = await User.findByIdAndUpdate(userId, payload, {
     new: true,
@@ -190,7 +207,16 @@ const getAllUsers = async (query: Record<string, string>) => {
 };
 
 const getMe = async (userId: string) => {
-  const user = await User.findById(userId).select('-password');
+  const user = await User.findOne({
+    _id: userId,
+    isActive: IsActive.ACTIVE,
+    isDeleted: false,
+  }).select('-password');
+
+  if (!user) {
+    throw new AppError(httpStatus.NOT_FOUND, 'User not found or inactive');
+  }
+
   return user;
 };
 

@@ -28,7 +28,7 @@ router.get(
 
 router.get('/me', checkAuth(...Object.values(Role)), UserControllers.getMe);
 
-router.patch(
+router.put(
   '/:id',
   checkAuth(...Object.values(Role)),
   multerUpload.single('file'),

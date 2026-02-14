@@ -8,7 +8,7 @@ import { JwtPayload } from 'jsonwebtoken';
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const payload = {
     ...req.body,
-    picture: req.file?.path,
+    picture: req.file?.path || req.body.picture,
   };
   const user = await userServices.createUserService(payload);
   sendResponse(res, {
@@ -23,7 +23,7 @@ const createUser = catchAsync(async (req: Request, res: Response) => {
 const createUserForAdmin = catchAsync(async (req: Request, res: Response) => {
   const payload = {
     ...req.body,
-    picture: req.file?.path,
+    picture: req.file?.path || req.body.picture,
   };
   const user = await userServices.createUserForAdminService(payload);
   sendResponse(res, {
@@ -35,9 +35,18 @@ const createUserForAdmin = catchAsync(async (req: Request, res: Response) => {
 });
 
 const updateUser = catchAsync(async (req: Request, res: Response) => {
+  let bodyData = req.body;
+  if (req.body.data) {
+    try {
+      bodyData = JSON.parse(req.body.data);
+    } catch {
+      bodyData = req.body;
+    }
+  }
+
   const payload = {
-    ...req.body,
-    picture: req.file?.path,
+    ...bodyData,
+    picture: req.file?.path || bodyData.picture,
   };
 
   const userId = req.params.id;
@@ -51,7 +60,7 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
     success: true,
-    message: 'User create successfully',
+    message: 'User update successfully',
     data: user,
   });
 });

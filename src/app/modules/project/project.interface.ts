@@ -1,7 +1,7 @@
 export interface IProject {
   _id: string;
   title: string;
-  slug: string;
+  slug?: string;
   liveLink: string;
   github?: string;
   content: string;
