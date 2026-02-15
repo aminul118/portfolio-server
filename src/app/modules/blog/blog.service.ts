@@ -38,27 +38,56 @@ const getSingleBlog = async (slug: string) => {
   return data;
 };
 
-const deleteSingleBlog = async (id: string) => {
-  // Find project first
-  const project = await Blog.findById(id);
-
-  if (!project) {
-    throw new AppError(httpStatus.NOT_FOUND, 'Project not found');
+const updateBlog = async (id: string, payload: Partial<IBlog>) => {
+  const isBlogExist = await Blog.findById(id);
+  if (!isBlogExist) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Blog not found');
   }
 
-  //  Delete thumbnail
-  if (project.thumbnail) {
-    await deleteFileFromCloudinary(project.thumbnail);
+  // Handle image replacement if needed
+  if (payload.thumbnail && isBlogExist.thumbnail) {
+    await deleteFileFromCloudinary(isBlogExist.thumbnail);
   }
 
-  //  Delete all photos (vlogs photos)
-  if (project.photos && project.photos.length > 0) {
+  if (
+    payload.photos &&
+    payload.photos.length > 0 &&
+    isBlogExist.photos &&
+    isBlogExist.photos.length > 0
+  ) {
     await Promise.all(
-      project.photos.map((photoUrl) => deleteFileFromCloudinary(photoUrl)),
+      isBlogExist.photos.map((photo) => deleteFileFromCloudinary(photo)),
     );
   }
 
-  //  Delete project from DB
+  const result = await Blog.findByIdAndUpdate(id, payload, {
+    new: true,
+    runValidators: true,
+  });
+  return result;
+};
+
+const deleteSingleBlog = async (id: string) => {
+  // Find blog first
+  const blog = await Blog.findById(id);
+
+  if (!blog) {
+    throw new AppError(httpStatus.NOT_FOUND, 'Blog not found');
+  }
+
+  //  Delete thumbnail
+  if (blog.thumbnail) {
+    await deleteFileFromCloudinary(blog.thumbnail);
+  }
+
+  //  Delete all photos
+  if (blog.photos && blog.photos.length > 0) {
+    await Promise.all(
+      blog.photos.map((photoUrl) => deleteFileFromCloudinary(photoUrl)),
+    );
+  }
+
+  //  Delete blog from DB
   const res = await Blog.findByIdAndDelete(id);
 
   return res;
@@ -68,5 +97,6 @@ export const BlogServices = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
+  updateBlog,
   deleteSingleBlog,
 };

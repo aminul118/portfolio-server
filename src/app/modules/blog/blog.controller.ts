@@ -3,6 +3,7 @@ import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
 import { BlogServices } from './blog.service';
+import { IBlog } from './blog.interface';
 
 const createBlog = catchAsync(async (req: Request, res: Response) => {
   const parsedData = JSON.parse(req.body.data);
@@ -54,6 +55,35 @@ const getSingleBlog = catchAsync(async (req: Request, res: Response) => {
   });
 });
 
+const updateBlog = catchAsync(async (req: Request, res: Response) => {
+  const { id } = req.params;
+  const parsedData = JSON.parse(req.body.data);
+
+  const files = req.files as {
+    thumbnail?: Express.Multer.File[];
+    photos?: Express.Multer.File[];
+  };
+
+  const payload: Partial<IBlog> = { ...parsedData };
+
+  if (files?.thumbnail?.[0]?.path) {
+    payload.thumbnail = files.thumbnail[0].path;
+  }
+
+  if (files?.photos && files.photos.length > 0) {
+    payload.photos = files.photos.map((file) => file.path);
+  }
+
+  const data = await BlogServices.updateBlog(id, payload);
+
+  sendResponse(res, {
+    statusCode: httpStatus.OK,
+    success: true,
+    message: 'Blog updated successfully',
+    data,
+  });
+});
+
 const deleteSingleBlog = catchAsync(async (req: Request, res: Response) => {
   const { id } = req.params;
 
@@ -71,5 +101,6 @@ export const BlogControllers = {
   createBlog,
   getAllBlogs,
   getSingleBlog,
+  updateBlog,
   deleteSingleBlog,
 };
