@@ -44,20 +44,26 @@ const updateBlog = async (id: string, payload: Partial<IBlog>) => {
     throw new AppError(httpStatus.NOT_FOUND, 'Blog not found');
   }
 
-  // Handle image replacement if needed
-  if (payload.thumbnail && isBlogExist.thumbnail) {
+  // Handle thumbnail replacement
+  if (
+    payload.thumbnail !== undefined &&
+    isBlogExist.thumbnail &&
+    payload.thumbnail !== isBlogExist.thumbnail
+  ) {
     await deleteFileFromCloudinary(isBlogExist.thumbnail);
   }
 
-  if (
-    payload.photos &&
-    payload.photos.length > 0 &&
-    isBlogExist.photos &&
-    isBlogExist.photos.length > 0
-  ) {
-    await Promise.all(
-      isBlogExist.photos.map((photo) => deleteFileFromCloudinary(photo)),
+  // Handle photos replacement (delete only removed photos)
+  if (payload.photos && Array.isArray(payload.photos)) {
+    const photosToDelete = isBlogExist.photos?.filter(
+      (oldPhoto) => !payload.photos?.includes(oldPhoto),
     );
+
+    if (photosToDelete && photosToDelete.length > 0) {
+      await Promise.all(
+        photosToDelete.map((photo) => deleteFileFromCloudinary(photo)),
+      );
+    }
   }
 
   const result = await Blog.findByIdAndUpdate(id, payload, {
