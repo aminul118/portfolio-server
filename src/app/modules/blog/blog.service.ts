@@ -15,7 +15,7 @@ const createBlog = async (payload: IBlog) => {
 const getAllBlogs = async (query: Record<string, string>) => {
   const queryBuilder = new QueryBuilder(Blog.find(), query);
 
-  const events = await queryBuilder
+  const blogs = await queryBuilder
     .search(blogSearchableField)
     .filter()
     .fields()
@@ -23,7 +23,7 @@ const getAllBlogs = async (query: Record<string, string>) => {
     .sort();
 
   const [data, meta] = await Promise.all([
-    events.build(),
+    blogs.build(),
     queryBuilder.getMeta(),
   ]);
 

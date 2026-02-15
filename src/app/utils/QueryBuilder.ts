@@ -30,7 +30,7 @@ export class QueryBuilder<T> {
 
   /** Apply search on searchable fields */
   search(searchableField: string[]): this {
-    const searchTerm = this.query.search || '';
+    const searchTerm = this.query.search || this.query.searchTerm || '';
     if (!searchTerm) return this;
 
     this.searchQuery = {
