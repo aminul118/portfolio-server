@@ -2,6 +2,7 @@ import { Blog } from '../blog/blog.model';
 import { Invoice } from '../invoice/invoice.model';
 import { Project } from '../project/project.model';
 import { User } from '../user/user.model';
+import { IsActive } from '../user/user.interface';
 
 const getAdminStats = async () => {
   const [
@@ -12,8 +13,9 @@ const getAdminStats = async () => {
     totalEarningsAgg,
     totalDueAgg,
     statusCountsAgg,
+    userStatusAgg,
   ] = await Promise.all([
-    User.estimatedDocumentCount(),
+    User.countDocuments({ isDeleted: false }),
     Project.estimatedDocumentCount(),
     Blog.estimatedDocumentCount(),
     Invoice.estimatedDocumentCount(),
@@ -47,9 +49,33 @@ const getAdminStats = async () => {
     // status distribution
     Invoice.aggregate([
       {
-        $group: {
-          _id: '$status',
-          count: { $sum: 1 },
+        $group: { _id: '$status', count: { $sum: 1 } },
+      },
+    ]),
+
+    // user status distribution
+    User.aggregate([
+      {
+        $facet: {
+          statusCounts: [
+            {
+              $match: { isDeleted: false },
+            },
+            {
+              $group: {
+                _id: '$isActive',
+                count: { $sum: 1 },
+              },
+            },
+          ],
+          deletedCount: [
+            {
+              $match: { isDeleted: true },
+            },
+            {
+              $count: 'count',
+            },
+          ],
         },
       },
     ]),
@@ -57,15 +83,31 @@ const getAdminStats = async () => {
 
   // Format status counts into a cleaner object
   const statusDistribution = statusCountsAgg.reduce(
-    (acc: Record<string, number>, curr) => {
+    (acc: Record<string, number>, curr: { _id: string; count: number }) => {
       acc[curr._id] = curr.count;
       return acc;
     },
     { PAID: 0, UNPAID: 0, PENDING: 0 },
   );
 
+  // Format user status counts
+  const userStats = userStatusAgg[0];
+  const userStatusDistribution = userStats.statusCounts.reduce(
+    (acc: Record<string, number>, curr: { _id: IsActive; count: number }) => {
+      acc[curr._id] = curr.count;
+      return acc;
+    },
+    { ACTIVE: 0, INACTIVE: 0, BLOCKED: 0 },
+  );
+
   const data = {
-    userCount,
+    user: {
+      totalCount: userCount,
+      activeCount: userStatusDistribution.ACTIVE,
+      inactiveCount: userStatusDistribution.INACTIVE,
+      blockedCount: userStatusDistribution.BLOCKED,
+      deletedCount: userStats.deletedCount[0]?.count || 0,
+    },
     projectCount,
     blogCount,
     invoice: {
