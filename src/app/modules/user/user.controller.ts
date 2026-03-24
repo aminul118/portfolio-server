@@ -3,7 +3,7 @@ import { userServices } from './user.service';
 import { Request, Response } from 'express';
 import catchAsync from '../../utils/catchAsync';
 import sendResponse from '../../utils/sendResponse';
-import { JwtPayload } from 'jsonwebtoken';
+import { IUser } from '../user/user.interface';
 
 const createUser = catchAsync(async (req: Request, res: Response) => {
   const payload = {
@@ -55,7 +55,7 @@ const updateUser = catchAsync(async (req: Request, res: Response) => {
   const user = await userServices.updateUser(
     userId,
     payload,
-    verifiedToken as JwtPayload,
+    verifiedToken as IUser,
   );
   sendResponse(res, {
     statusCode: httpStatus.CREATED,
@@ -81,8 +81,8 @@ const getAllUsers = catchAsync(async (req: Request, res: Response) => {
 });
 
 const getMe = catchAsync(async (req: Request, res: Response) => {
-  const decodedToken = req.user as JwtPayload;
-  const users = await userServices.getMe(decodedToken.userId);
+  const user = req.user as IUser;
+  const users = await userServices.getMe(user._id?.toString() as string);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,

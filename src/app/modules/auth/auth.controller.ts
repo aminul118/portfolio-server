@@ -11,6 +11,7 @@ import envVars from '../../config/env';
 import { JwtPayload } from 'jsonwebtoken';
 import { createUserToken } from '../../utils/userTokens';
 import passport from 'passport';
+import { IUser } from '../user/user.interface';
 
 const credentialsLogin = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
@@ -98,13 +99,9 @@ const logout = catchAsync(async (req: Request, res: Response) => {
 const changePassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
     const { newPassword, oldPassword } = req.body;
-    const decodedToken = req.user;
+    const user = req.user;
 
-    await AuthServices.changePassword(
-      oldPassword,
-      newPassword,
-      decodedToken as JwtPayload,
-    );
+    await AuthServices.changePassword(oldPassword, newPassword, user as IUser);
 
     sendResponse(res, {
       success: true,
@@ -117,8 +114,8 @@ const changePassword = catchAsync(
 
 const setPassword = catchAsync(async (req: Request, res: Response) => {
   const { plainPassword } = req.body;
-  const decodedToken = req.user as JwtPayload;
-  await AuthServices.setPassword(decodedToken.userId, plainPassword);
+  const user = req.user as any;
+  await AuthServices.setPassword(user._id?.toString() as string, plainPassword);
 
   sendResponse(res, {
     statusCode: httpStatus.OK,
@@ -142,9 +139,8 @@ const forgotPassword = catchAsync(async (req: Request, res: Response) => {
 
 const resetPassword = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    const decodedToken = req.user;
-
-    await AuthServices.resetPassword(req.body, decodedToken as JwtPayload);
+    const user = req.user as any;
+    await AuthServices.resetPassword(req.body, user as any);
 
     sendResponse(res, {
       success: true,
