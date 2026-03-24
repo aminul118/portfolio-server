@@ -1,60 +1,46 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 import { NextFunction, Request, Response } from 'express';
-import AppError from '../errorHelpers/AppError';
-import { verifyToken } from '../utils/jwt';
-import envVars from '../config/env';
+import { IUser } from '../modules/user/user.interface';
+import passport from 'passport';
 import httpStatus from 'http-status-codes';
-import { JwtPayload } from 'jsonwebtoken';
-import { User } from '../modules/user/user.model';
-import { IsActive } from '../modules/user/user.interface';
+import AppError from '../errorHelpers/AppError';
 
+/**
+ * Middleware to check if the user is authenticated and has the required roles.
+ * Uses passport-jwt strategy for authentication.
+ */
 const checkAuth =
   (...authRoles: string[]) =>
   async (req: Request, res: Response, next: NextFunction) => {
-    try {
-      const accessToken = req.headers.authorization || req.cookies.accessToken;
+    passport.authenticate(
+      'jwt',
+      { session: false },
+      async (
+        err: Error | null,
+        user: IUser | null,
+        info: { message?: string } | undefined,
+      ) => {
+        if (err) {
+          return next(err);
+        }
 
-      if (!accessToken) {
-        throw new AppError(httpStatus.BAD_GATEWAY, 'No token received');
-      }
-      const verifiedToken = verifyToken(
-        accessToken,
-        envVars.JWT_ACCESS_SECRET,
-      ) as JwtPayload;
+        if (!user) {
+          const errorMessage = info?.message || 'You are not authorized';
+          return next(new AppError(httpStatus.UNAUTHORIZED, errorMessage));
+        }
 
-      if (!verifiedToken) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'You are not authorized');
-      }
+        // Check for roles
+        if (authRoles.length && !authRoles.includes(user.role)) {
+          return next(
+            new AppError(httpStatus.FORBIDDEN, 'You are not permitted'),
+          );
+        }
 
-      if (!authRoles.includes(verifiedToken.role)) {
-        throw new AppError(httpStatus.UNAUTHORIZED, 'You are not permitted');
-      }
-
-      const isUserExist = await User.findOne({ email: verifiedToken.email });
-
-      if (!isUserExist) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'User does not exist');
-      }
-      if (
-        isUserExist.isActive === IsActive.BLOCKED ||
-        isUserExist.isActive === IsActive.INACTIVE
-      ) {
-        throw new AppError(
-          httpStatus.BAD_REQUEST,
-          `User is ${isUserExist.isActive}`,
-        );
-      }
-      if (isUserExist.isDeleted) {
-        throw new AppError(httpStatus.BAD_REQUEST, 'User is deleted');
-      }
-
-      if (!isUserExist.isVerified) {
-        throw new AppError(httpStatus.BAD_REQUEST, "User isn't verified");
-      }
-      req.user = verifiedToken;
-      next();
-    } catch (error) {
-      next(error);
-    }
+        // Attach user to request
+        (req as any).user = user;
+        next();
+      },
+    )(req, res, next);
   };
 
 export default checkAuth;
