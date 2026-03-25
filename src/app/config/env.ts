@@ -11,12 +11,14 @@ dotenv.config({ path: path.resolve(process.cwd(), envFile) });
 const loadEnvVariables = (): EnvConfig => ({
   PORT: getEnv('PORT'),
   DB_URL: getEnv('DB_URL'),
-  NODE_ENV: getEnv('NODE_ENV') as 'development' | 'production',
+  NODE_ENV: (process.env.NODE_ENV || 'development') as
+    | 'development'
+    | 'production',
   JWT_ACCESS_SECRET: getEnv('JWT_ACCESS_SECRET'),
   JWT_ACCESS_EXPIRES: getEnv('JWT_ACCESS_EXPIRES'),
   JWT_REFRESH_SECRET: getEnv('JWT_REFRESH_SECRET'),
   JWT_REFRESH_EXPIRES: getEnv('JWT_REFRESH_EXPIRES'),
-  BCRYPT_SALT_ROUND: Number(getEnv('BCRYPT_SALT_ROUND')),
+  BCRYPT_SALT_ROUND: Number(getEnv('BCRYPT_SALT_ROUND', '10')),
   SUPER_ADMIN_EMAIL: getEnv('SUPER_ADMIN_EMAIL'),
   SUPER_ADMIN_PASSWORD: getEnv('SUPER_ADMIN_PASSWORD'),
   GOOGLE_CLIENT_ID: getEnv('GOOGLE_CLIENT_ID'),
@@ -45,6 +47,12 @@ const loadEnvVariables = (): EnvConfig => ({
     REDIS_USERNAME: getEnv('REDIS_USERNAME'),
     REDIS_PASSWORD: getEnv('REDIS_PASSWORD'),
   },
+  COOKIE_DOMAIN: process.env.COOKIE_DOMAIN,
+  COOKIE_SECURE: getEnv('COOKIE_SECURE', isProd ? 'true' : 'false') === 'true',
+  COOKIE_SAMESITE: getEnv('COOKIE_SAMESITE', isProd ? 'none' : 'lax') as
+    | 'lax'
+    | 'none'
+    | 'strict',
 });
 
 const envVars = loadEnvVariables();

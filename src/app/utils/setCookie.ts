@@ -1,4 +1,5 @@
 import { Response } from 'express';
+import envVars from '../config/env';
 
 export interface AuthTokens {
   accessToken?: string;
@@ -6,17 +7,15 @@ export interface AuthTokens {
 }
 
 export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
-  const isProduction = process.env.NODE_ENV === 'production';
-  const sameSite = isProduction ? 'none' : 'lax'; // allow cross-subdomain in prod
-  const domain = isProduction ? '.aminuldev.site' : undefined;
+  const { COOKIE_SECURE, COOKIE_SAMESITE, COOKIE_DOMAIN } = envVars;
 
   if (tokenInfo.accessToken) {
     res.cookie('accessToken', tokenInfo.accessToken, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite,
-      domain,
-      path: '/', // always include
+      secure: COOKIE_SECURE,
+      sameSite: COOKIE_SAMESITE,
+      domain: COOKIE_DOMAIN,
+      path: '/',
       maxAge: 1000 * 60 * 60 * 24, // 1 day
     });
   }
@@ -24,11 +23,11 @@ export const setAuthCookie = (res: Response, tokenInfo: AuthTokens) => {
   if (tokenInfo.refreshToken) {
     res.cookie('refreshToken', tokenInfo.refreshToken, {
       httpOnly: true,
-      secure: isProduction,
-      sameSite,
-      domain,
+      secure: COOKIE_SECURE,
+      sameSite: COOKIE_SAMESITE,
+      domain: COOKIE_DOMAIN,
       path: '/',
-      maxAge: 1000 * 60 * 60 * 24 * 30, // 7 days
+      maxAge: 1000 * 60 * 60 * 24 * 30, // 30 days
     });
   }
 };

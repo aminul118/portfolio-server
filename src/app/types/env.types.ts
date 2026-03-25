@@ -35,4 +35,7 @@ export interface EnvConfig {
     REDIS_USERNAME: string;
     REDIS_PASSWORD: string;
   };
+  COOKIE_DOMAIN?: string;
+  COOKIE_SECURE: boolean;
+  COOKIE_SAMESITE: 'lax' | 'none' | 'strict';
 }
